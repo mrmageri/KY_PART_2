@@ -8,6 +8,7 @@ build/
 target/
 .idea/
 *.iml
+.iml
 
 ### Eclipse ###
 .apt_generated
