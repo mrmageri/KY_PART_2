@@ -10,6 +10,10 @@ target/
 *.iml
 .iml
 
+*.class
+.idea
+.vscode/
+
 ### Eclipse ###
 .apt_generated
 .classpath
