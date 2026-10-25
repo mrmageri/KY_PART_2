@@ -11,11 +11,6 @@ public final class Main {
     private Main() {
     }
 
-    /**
-     * Runs the tool.
-     *
-     * @param args command-line arguments
-     */
     public static void main(String[] args) {
         if (containsHelp(args)) {
             printHelp();
