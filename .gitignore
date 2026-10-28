@@ -13,7 +13,7 @@ target/
 *.class
 .idea
 .vscode/
-.Makefile
+Makefile
 ### Eclipse ###
 .apt_generated
 .classpath
