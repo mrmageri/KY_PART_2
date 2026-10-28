@@ -8,9 +8,6 @@ public final class Main {
     private static final String OPT_HELP_LONG  = "--help";
     private static final String OPT_HELP_SHORT = "-h";
 
-    private Main() {
-    }
-
     public static void main(String[] args) {
         if (containsHelp(args)) {
             printHelp();
