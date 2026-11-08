@@ -5,9 +5,6 @@ import config.RepoMode;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-/**
- * Lightweight test runner (no external dependencies).
- */
 public final class TestRunner {
 
     private static int passed;
@@ -229,11 +226,6 @@ public final class TestRunner {
 
     @FunctionalInterface
     private interface ThrowingRunnable {
-        /**
-         * Runs the test body.
-         *
-         * @throws Exception on unexpected failure
-         */
         void run() throws Exception;
     }
 }

@@ -3,14 +3,6 @@ package config;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-
-/**
- * Parses command-line arguments into a validated {@link Config}.
- *
- * <p>Each option accepts its value either as {@code --name value} or as
- * {@code --name=value}. Unknown options, duplicated options, missing values
- * and invalid value formats are reported as {@link ConfigException}.</p>
- */
 public final class ConfigParser {
 
     private static final String OPT_PACKAGE = "--package";
@@ -124,18 +116,8 @@ public final class ConfigParser {
         return depth;
     }
 
-    /**
-     * Functional interface describing an option-applying callback.
-     */
     @FunctionalInterface
     private interface OptionApplier {
-        /**
-         * Applies the option value to the builder.
-         *
-         * @param builder config builder
-         * @param value   raw option value
-         * @throws ConfigException if the value is invalid
-         */
         void apply(Config.Builder builder, String value)
                 throws ConfigException;
     }

@@ -3,18 +3,17 @@ out/
 !**/src/main/**/out/
 !**/src/test/**/out/
 .kotlin
-
-build/
-target/
 .idea/
 *.iml
-.iml
-
 *.class
-.idea
-.vscode/
-Makefile
-/Makefile
+
+### Build output ###
+build/
+target/
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
+
 ### Eclipse ###
 .apt_generated
 .classpath
@@ -23,9 +22,6 @@ Makefile
 .settings
 .springBeans
 .sts4-cache
-bin/
-!**/src/main/**/bin/
-!**/src/test/**/bin/
 
 ### NetBeans ###
 /nbproject/private/
