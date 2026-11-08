@@ -3,6 +3,10 @@ package config;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+
+/**
+ * Parses command-line arguments into a validated Config object.
+ */
 public final class ConfigParser {
 
     private static final String OPT_PACKAGE = "--package";
@@ -17,6 +21,12 @@ public final class ConfigParser {
     private static final Set<String> KNOWN_OPTIONS = Set.of(
             OPT_PACKAGE, OPT_REPO, OPT_MODE, OPT_VERSION,
             OPT_OUTPUT, OPT_ASCII, OPT_DEPTH, OPT_FILTER);
+
+    private static final int NOT_FOUND = -1;
+    private static final int KEY_START_INDEX = 0;
+    private static final int VALUE_OFFSET = 1;
+    private static final int ARGUMENT_STEP = 1;
+    private static final int KEY_VALUE_STEP = 2;
 
     private ConfigParser() {
     }
@@ -68,18 +78,19 @@ public final class ConfigParser {
             int eq = arg.indexOf('=');
             String key;
             String value;
-            if (eq >= 0) {
-                key = arg.substring(0, eq);
-                value = arg.substring(eq + 1);
-                i += 1;
+
+            if (eq != NOT_FOUND) {
+                key = arg.substring(KEY_START_INDEX, eq);
+                value = arg.substring(eq + VALUE_OFFSET);
+                i += ARGUMENT_STEP;
             } else {
                 key = arg;
-                if (i + 1 >= args.length) {
+                if (i + VALUE_OFFSET >= args.length) {
                     throw new ConfigException(
                             "Missing value for option '" + key + "'");
                 }
-                value = args[i + 1];
-                i += 2;
+                value = args[i + VALUE_OFFSET];
+                i += KEY_VALUE_STEP;
             }
             if (!KNOWN_OPTIONS.contains(key)) {
                 throw new ConfigException("Unknown option '" + key + "'");

@@ -1,14 +1,25 @@
-import config.Config;
-import config.ConfigException;
-import config.ConfigParser;
-import config.RepoMode;
+import config.*;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+/**
+ * A simple test runner for the application without external dependencies.
+ */
 public final class TestRunner {
 
     private static int passed;
     private static int failed;
+
+    private static final int EXIT_FAILURE = 1;
+    private static final int INCREMENT = 1;
+    private static final int ZERO = 0;
+    private static final int FIRST_INDEX = 0;
+    private static final int SECOND_INDEX = 1;
+
+    private static final int EXPECTED_GROUPS_SIZE = 2;
+    private static final int EXPECTED_ALTS_SIZE = 2;
+    private static final int EXPECTED_DEPTH = 3;
 
     private TestRunner() {
     }
@@ -21,8 +32,8 @@ public final class TestRunner {
     public static void main(String[] args) {
         runAll();
         System.out.println("Passed: " + passed + ", Failed: " + failed);
-        if (failed > 0) {
-            System.exit(1);
+        if (failed > ZERO) {
+            System.exit(EXIT_FAILURE);
         }
     }
 
@@ -46,6 +57,7 @@ public final class TestRunner {
         run("unknown option",          TestRunner::testUnknownOption);
         run("missing value",           TestRunner::testMissingValue);
         run("duplicate option",        TestRunner::testDuplicateOption);
+        run("dependency parsing",      TestRunner::testDependencyParsing);
     }
 
     private static void testValidFullConfig() {
@@ -64,7 +76,7 @@ public final class TestRunner {
         assertEquals("1.0.0", c.getVersion());
         assertEquals("graph.png", c.getOutputFile());
         assertEquals(true, c.isAsciiTree());
-        assertEquals(3, c.getMaxDepth());
+        assertEquals(EXPECTED_DEPTH, c.getMaxDepth());
         assertEquals("core", c.getFilter());
     }
 
@@ -145,7 +157,7 @@ public final class TestRunner {
                 "--repo", tmp.toString(), "--max-depth", "0");
         expectConfigException("--package", "foo",
                 "--repo", tmp.toString(),
-                "--max-depth", String.valueOf(Config.MAX_ALLOWED_DEPTH + 1));
+                "--max-depth", String.valueOf(Config.MAX_ALLOWED_DEPTH + INCREMENT));
     }
 
     private static void testInvalidAscii() {
@@ -174,16 +186,29 @@ public final class TestRunner {
                 "--repo", tmp.toString());
     }
 
+    private static void testDependencyParsing() {
+        var groups = DependencyParser.parse("libc6 (>= 2.31), libssl1.1 | libssl3");
+        assertEquals(EXPECTED_GROUPS_SIZE, groups.size());
+
+        assertEquals("libc6", groups.get(FIRST_INDEX).get(FIRST_INDEX).packageName());
+        assertEquals(">=", groups.get(FIRST_INDEX).get(FIRST_INDEX).operator());
+        assertEquals("2.31", groups.get(FIRST_INDEX).get(FIRST_INDEX).version());
+
+        assertEquals(EXPECTED_ALTS_SIZE, groups.get(SECOND_INDEX).size());
+        assertEquals("libssl1.1", groups.get(SECOND_INDEX).get(FIRST_INDEX).packageName());
+        assertEquals("libssl3", groups.get(SECOND_INDEX).get(SECOND_INDEX).packageName());
+    }
+
     private static void run(String name, ThrowingRunnable test) {
         try {
             test.run();
-            passed += 1;
+            passed += INCREMENT;
             System.out.println("[PASS] " + name);
         } catch (AssertionError e) {
-            failed += 1;
+            failed += INCREMENT;
             System.out.println("[FAIL] " + name + " - " + e.getMessage());
         } catch (Exception e) {
-            failed += 1;
+            failed += INCREMENT;
             System.out.println("[FAIL] " + name + " - " + e);
         }
     }

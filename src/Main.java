@@ -1,13 +1,18 @@
-import config.Config;
-import config.ConfigException;
-import config.ConfigParser;
+import config.*;
 
+import java.util.List;
 
 public final class Main {
 
     private static final String OPT_HELP_LONG  = "--help";
     private static final String OPT_HELP_SHORT = "-h";
+    private static final int EXIT_FAILURE = 1;
 
+    /**
+     * Main method.
+     *
+     * @param args command-line arguments
+     */
     public static void main(String[] args) {
         if (containsHelp(args)) {
             printHelp();
@@ -16,10 +21,30 @@ public final class Main {
         try {
             Config config = ConfigParser.parse(args);
             System.out.println(config.toKeyValueString());
+            System.out.println();
+            System.out.println("=== Direct dependencies of " + config.getPackageName()
+                    + " (version: " + config.getVersion() + ") ===");
+
+            List<List<DependencyParser.Dependency>> deps =
+                    DependencyService.fetchDirectDependencies(
+                            config.getRepository(),
+                            config.getPackageName(),
+                            config.getVersion());
+
+            if (deps.isEmpty()) {
+                System.out.println("(no direct dependencies)");
+            } else {
+                for (List<DependencyParser.Dependency> group : deps) {
+                    String line = group.stream()
+                            .map(DependencyParser.Dependency::display)
+                            .collect(java.util.stream.Collectors.joining(" | "));
+                    System.out.println("  " + line);
+                }
+            }
         } catch (ConfigException e) {
             System.err.println("Configuration error: " + e.getMessage());
             System.err.println("Try '--help' for usage information.");
-            System.exit(1);
+            System.exit(EXIT_FAILURE);
         }
     }
 
@@ -35,7 +60,7 @@ public final class Main {
     private static void printHelp() {
         System.out.println("Usage: deptool [OPTIONS]");
         System.out.println();
-        System.out.println("Dependency graph visualization tool (Stage 1).");
+        System.out.println("Dependency graph visualization tool (Stage 2).");
         System.out.println();
         System.out.println("Options:");
         System.out.println("  --package <name>     Package name (required)");
