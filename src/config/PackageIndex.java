@@ -32,22 +32,31 @@ public final class PackageIndex {
 
     public static PackageIndex parse(String content) {
         List<PackageEntry> result = new ArrayList<>();
-        String[] blocks = content.split("\\R\\R");
-        for (String block : blocks) {
-            if (block.isBlank()) continue;
-            Map<String, String> fields = new HashMap<>();
-            for (String line : block.split("\\R")) {
-                int colon = line.indexOf(':');
+        Map<String, String> fields = new HashMap<>();
 
-                if (colon >= MIN_VALID_COLON_INDEX) {
-                    String key = line.substring(KEY_START_INDEX, colon).trim();
-                    String value = line.substring(colon + VALUE_OFFSET).trim();
-                    fields.put(key, value);
+        for (String line : content.split("\\R")) {
+            if (line.isBlank()) {
+                if (fields.containsKey("Package")) {
+                    result.add(new PackageEntry(fields));
+                    fields = new HashMap<>();
                 }
+                continue;
             }
-            if (fields.containsKey("Package")) {
-                result.add(new PackageEntry(fields));
+
+            int colon = line.indexOf(':');
+            if (colon >= MIN_VALID_COLON_INDEX) {
+                String key = line.substring(KEY_START_INDEX, colon).trim();
+                String value = line.substring(colon + VALUE_OFFSET).trim();
+
+                if ("Package".equals(key) && fields.containsKey("Package")) {
+                    result.add(new PackageEntry(fields));
+                    fields = new HashMap<>();
+                }
+                fields.put(key, value);
             }
+        }
+        if (fields.containsKey("Package")) {
+            result.add(new PackageEntry(fields));
         }
         return new PackageIndex(result);
     }

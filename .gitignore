@@ -1,18 +1,13 @@
 ### IntelliJ IDEA ###
-out/
-!**/src/main/**/out/
-!**/src/test/**/out/
-.kotlin
 .idea/
 *.iml
 *.class
 
 ### Build output ###
+out/
 build/
 target/
 bin/
-!**/src/main/**/bin/
-!**/src/test/**/bin/
 
 ### Eclipse ###
 .apt_generated
@@ -35,3 +30,7 @@ bin/
 
 ### Mac OS ###
 .DS_Store
+
+### Generated Graph Files ###
+*.dot
+*.png

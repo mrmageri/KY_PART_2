@@ -1,6 +1,7 @@
 import config.*;
 
 import java.util.List;
+import java.util.Map;
 
 public final class Main {
 
@@ -22,23 +23,24 @@ public final class Main {
             Config config = ConfigParser.parse(args);
             System.out.println(config.toKeyValueString());
             System.out.println();
-            System.out.println("=== Direct dependencies of " + config.getPackageName()
+            System.out.println("=== Dependency Graph for " + config.getPackageName()
                     + " (version: " + config.getVersion() + ") ===");
 
-            List<List<DependencyParser.Dependency>> deps =
-                    DependencyService.fetchDirectDependencies(
-                            config.getRepository(),
-                            config.getPackageName(),
-                            config.getVersion());
+            Map<String, List<String>> graph = DependencyService.buildGraph(config);
 
-            if (deps.isEmpty()) {
-                System.out.println("(no direct dependencies)");
+            if (graph.isEmpty()) {
+                System.out.println("(no dependencies found or filtered out)");
             } else {
-                for (List<DependencyParser.Dependency> group : deps) {
-                    String line = group.stream()
-                            .map(DependencyParser.Dependency::display)
-                            .collect(java.util.stream.Collectors.joining(" | "));
-                    System.out.println("  " + line);
+                if (config.isAsciiTree()) {
+                    GraphPrinter.printAsciiTree(graph, config.getPackageName());
+                } else {
+                    for (Map.Entry<String, List<String>> entry : graph.entrySet()) {
+                        System.out.println("  " + entry.getKey() + " -> " + entry.getValue());
+                    }
+                }
+
+                if (config.getOutputFile().endsWith(".dot")) {
+                    GraphPrinter.saveDot(graph, config.getOutputFile());
                 }
             }
         } catch (ConfigException e) {
@@ -60,7 +62,7 @@ public final class Main {
     private static void printHelp() {
         System.out.println("Usage: deptool [OPTIONS]");
         System.out.println();
-        System.out.println("Dependency graph visualization tool (Stage 2).");
+        System.out.println("Dependency graph visualization tool (Stage 3).");
         System.out.println();
         System.out.println("Options:");
         System.out.println("  --package <name>     Package name (required)");

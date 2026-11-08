@@ -2,6 +2,8 @@ import config.*;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
+import java.util.Map;
 
 /**
  * A simple test runner for the application without external dependencies.
@@ -20,6 +22,7 @@ public final class TestRunner {
     private static final int EXPECTED_GROUPS_SIZE = 2;
     private static final int EXPECTED_ALTS_SIZE = 2;
     private static final int EXPECTED_DEPTH = 3;
+    private static final int TEST_MAX_DEPTH = 1;
 
     private TestRunner() {
     }
@@ -58,6 +61,9 @@ public final class TestRunner {
         run("missing value",           TestRunner::testMissingValue);
         run("duplicate option",        TestRunner::testDuplicateOption);
         run("dependency parsing",      TestRunner::testDependencyParsing);
+        run("graph depth limit",       TestRunner::testGraphDepthLimit);
+        run("graph filter",            TestRunner::testGraphFilter);
+        run("graph cycle handling",    TestRunner::testGraphCycle);
     }
 
     private static void testValidFullConfig() {
@@ -197,6 +203,48 @@ public final class TestRunner {
         assertEquals(EXPECTED_ALTS_SIZE, groups.get(SECOND_INDEX).size());
         assertEquals("libssl1.1", groups.get(SECOND_INDEX).get(FIRST_INDEX).packageName());
         assertEquals("libssl3", groups.get(SECOND_INDEX).get(SECOND_INDEX).packageName());
+    }
+
+    private static void testGraphDepthLimit() {
+        PackageIndex index = new PackageIndex(List.of(
+                new PackageIndex.PackageEntry(Map.of("Package", "A", "Depends", "B")),
+                new PackageIndex.PackageEntry(Map.of("Package", "B", "Depends", "C")),
+                new PackageIndex.PackageEntry(Map.of("Package", "C"))
+        ));
+
+        Map<String, List<String>> graph = GraphBuilder.build(index, "A", TEST_MAX_DEPTH, "");
+
+        assertEquals(true, graph.containsKey("A"));
+        assertEquals(true, graph.containsKey("B"));
+        assertEquals(false, graph.containsKey("C"));
+    }
+
+    private static void testGraphFilter() {
+        PackageIndex index = new PackageIndex(List.of(
+                new PackageIndex.PackageEntry(Map.of("Package", "ROOT", "Depends", "CHILD, TARGET")),
+                new PackageIndex.PackageEntry(Map.of("Package", "CHILD")),
+                new PackageIndex.PackageEntry(Map.of("Package", "TARGET"))
+        ));
+
+        Map<String, List<String>> graph = GraphBuilder.build(index, "ROOT", 5, "TARGET");
+
+        assertEquals(true, graph.containsKey("ROOT"));
+        assertEquals(false, graph.get("ROOT").contains("TARGET"));
+        assertEquals(true, graph.containsKey("CHILD"));
+        assertEquals(false, graph.containsKey("TARGET"));
+    }
+
+    private static void testGraphCycle() {
+        PackageIndex index = new PackageIndex(List.of(
+                new PackageIndex.PackageEntry(Map.of("Package", "A", "Depends", "B")),
+                new PackageIndex.PackageEntry(Map.of("Package", "B", "Depends", "A"))
+        ));
+
+        Map<String, List<String>> graph = GraphBuilder.build(index, "A", 5, "");
+
+        assertEquals(EXPECTED_GROUPS_SIZE, graph.size());
+        assertEquals(true, graph.containsKey("A"));
+        assertEquals(true, graph.containsKey("B"));
     }
 
     private static void run(String name, ThrowingRunnable test) {

@@ -1,0 +1,13 @@
+Package: A
+Depends: B
+
+Package: B
+Depends: C
+
+Package: C
+Depends: A, D
+
+Package: D
+Depends: E
+
+Package: E

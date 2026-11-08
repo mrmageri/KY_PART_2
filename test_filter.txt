@@ -1,0 +1,10 @@
+Package: ROOT
+Depends: CHILD1, CHILD2
+
+Package: CHILD1
+Depends: TARGET
+
+Package: CHILD2
+Depends: TARGET
+
+Package: TARGET
