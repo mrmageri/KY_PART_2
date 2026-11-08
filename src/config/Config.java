@@ -296,7 +296,12 @@ public final class Config {
         }
 
         private void validateRepository() throws ConfigException {
-            if (repoMode == RepoMode.LOCAL) {
+            if (repository.startsWith("http://") || repository.startsWith("https://")) {
+                if (!URL_PATTERN.matcher(repository).matches()) {
+                    throw new ConfigException("Invalid repository URL '"
+                            + repository + "': expected http:// or https://");
+                }
+            } else if (repoMode == RepoMode.LOCAL) {
                 Path path = Paths.get(repository);
                 if (!Files.exists(path)) {
                     throw new ConfigException("Repository file does not exist: "
@@ -307,10 +312,8 @@ public final class Config {
                             + "regular file: " + repository);
                 }
             } else {
-                if (!URL_PATTERN.matcher(repository).matches()) {
-                    throw new ConfigException("Invalid repository URL '"
-                            + repository + "': expected http:// or https://");
-                }
+                throw new ConfigException("Invalid repository URL '"
+                        + repository + "': expected http:// or https://");
             }
         }
     }
