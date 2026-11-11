@@ -23,8 +23,8 @@ public final class Main {
             Config config = ConfigParser.parse(args);
             System.out.println(config.toKeyValueString());
             System.out.println();
-            System.out.println("=== Dependency Graph for " + config.getPackageName()
-                    + " (version: " + config.getVersion() + ") ===");
+            System.out.println("Dependency Graph for " + config.getPackageName()
+                    + " (version: " + config.getVersion() + ")");
 
             Map<String, List<String>> graph = DependencyService.buildGraph(config);
 
