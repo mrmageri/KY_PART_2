@@ -13,6 +13,7 @@ public final class Config {
 
     public static final int MIN_ALLOWED_DEPTH = 1;
     public static final boolean DEFAULT_LOAD_ORDER = false;
+    public static final boolean DEFAULT_MERMAID_OUTPUT = false;
 
     public static final String DEFAULT_OUTPUT_FILE = "dependency-graph.png";
 
@@ -37,6 +38,7 @@ public final class Config {
     private final int maxDepth;
     private final String filter;
     private final boolean loadOrder;
+    private final boolean mermaidOutput;
 
     private Config(Builder builder) {
         this.packageName = builder.packageName;
@@ -48,6 +50,7 @@ public final class Config {
         this.maxDepth = builder.maxDepth;
         this.filter = builder.filter;
         this.loadOrder = builder.loadOrder;
+        this.mermaidOutput = builder.mermaidOutput;
     }
 
     /**
@@ -60,6 +63,8 @@ public final class Config {
     }
 
     public boolean isLoadOrder() { return loadOrder; }
+
+    public boolean isMermaidOutput() { return mermaidOutput; }
 
     /**
      * Returns the repository URL or local file path.
@@ -139,7 +144,8 @@ public final class Config {
                 + "ascii-tree: " + asciiTree + nl
                 + "max-depth: " + maxDepth + nl
                 + "load-order: " + loadOrder + nl
-                + "filter: " + filter;
+                + "filter: " + filter + nl
+                + "mermaid-output: " + mermaidOutput;
     }
 
     /**
@@ -157,6 +163,7 @@ public final class Config {
         private int maxDepth = DEFAULT_MAX_DEPTH;
         private String filter = "";
         private boolean loadOrder = DEFAULT_LOAD_ORDER;
+        private boolean mermaidOutput = DEFAULT_MERMAID_OUTPUT;
 
         /**
          * Sets the analyzed package name.
@@ -180,6 +187,11 @@ public final class Config {
 
         public Builder loadOrder(boolean value) {
             this.loadOrder = value;
+            return this;
+        }
+
+        public Builder mermaidOutput(boolean value) {
+            this.mermaidOutput = value;
             return this;
         }
 

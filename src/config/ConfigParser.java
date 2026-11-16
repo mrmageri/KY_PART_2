@@ -18,10 +18,12 @@ public final class ConfigParser {
     private static final String OPT_DEPTH   = "--max-depth";
     private static final String OPT_FILTER  = "--filter";
     private static final String OPT_LOAD_ORDER = "--load-order";
+    private static final String OPT_MERMAID = "--mermaid";
 
     private static final Set<String> KNOWN_OPTIONS = Set.of(
             OPT_PACKAGE, OPT_REPO, OPT_MODE, OPT_VERSION,
-            OPT_OUTPUT, OPT_ASCII, OPT_DEPTH, OPT_FILTER, OPT_LOAD_ORDER);
+            OPT_OUTPUT, OPT_ASCII, OPT_DEPTH, OPT_FILTER,
+            OPT_LOAD_ORDER, OPT_MERMAID);
 
     private static final int NOT_FOUND = -1;
     private static final int KEY_START_INDEX = 0;
@@ -56,6 +58,8 @@ public final class ConfigParser {
         applyIfPresent(opts, OPT_FILTER,  builder, Config.Builder::filter);
         applyIfPresent(opts, OPT_LOAD_ORDER, builder,
                 (b, v) -> b.loadOrder(parseBoolean(v, OPT_LOAD_ORDER)));
+        applyIfPresent(opts, OPT_MERMAID, builder,
+                (b, v) -> b.mermaidOutput(parseBoolean(v, OPT_MERMAID)));
 
         return builder.build();
     }

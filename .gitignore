@@ -34,3 +34,5 @@ bin/
 ### Generated Graph Files ###
 *.dot
 *.png
+*.mmd
+*.mermaid

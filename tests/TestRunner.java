@@ -4,6 +4,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import java.io.IOException;
 
 /**
  * A simple test runner for the application without external dependencies.
@@ -67,6 +68,10 @@ public final class TestRunner {
         run("load order simple", TestRunner::testLoadOrderSimple);
         run("load order cycle", TestRunner::testLoadOrderCycle);
         run("load order filter", TestRunner::testLoadOrderFilter);
+        run("mermaid simple", TestRunner::testMermaidSimple);
+        run("mermaid cycle", TestRunner::testMermaidCycle);
+        run("mermaid empty deps", TestRunner::testMermaidEmptyDeps);
+        run("png file created", TestRunner::testPngFileCreated);
     }
 
     private static void testValidFullConfig() {
@@ -229,7 +234,7 @@ public final class TestRunner {
                 new PackageIndex.PackageEntry(Map.of("Package", "TARGET"))
         ));
 
-        Map<String, List<String>> graph = GraphBuilder.build(index, "ROOT", 5, "TARGET");
+        Map<String, List<String>> graph = GraphBuilder.build(index, "ROOT", Config.DEFAULT_MAX_DEPTH, "TARGET");
 
         assertEquals(true, graph.containsKey("ROOT"));
         assertEquals(false, graph.get("ROOT").contains("TARGET"));
@@ -243,7 +248,7 @@ public final class TestRunner {
                 new PackageIndex.PackageEntry(Map.of("Package", "B", "Depends", "A"))
         ));
 
-        Map<String, List<String>> graph = GraphBuilder.build(index, "A", 5, "");
+        Map<String, List<String>> graph = GraphBuilder.build(index, "A", Config.DEFAULT_MAX_DEPTH, "");
 
         assertEquals(EXPECTED_GROUPS_SIZE, graph.size());
         assertEquals(true, graph.containsKey("A"));
@@ -338,6 +343,59 @@ public final class TestRunner {
 
         assertEquals(List.of("CHILD1", "CHILD2", "ROOT"),
                 DependencyLoadOrder.compute(graph, "ROOT"));
+    }
+    private static void testMermaidSimple() {
+        PackageIndex index = new PackageIndex(List.of(
+                new PackageIndex.PackageEntry(Map.of("Package", "A", "Depends", "B")),
+                new PackageIndex.PackageEntry(Map.of("Package", "B"))
+        ));
+        Map<String, List<String>> graph =
+                GraphBuilder.build(index, "A", Config.DEFAULT_MAX_DEPTH, "");
+        String mermaid = MermaidRenderer.render(graph);
+        assertEquals(true, mermaid.startsWith("graph TD\n"));
+        assertEquals(true, mermaid.contains("n_A[A]"));
+        assertEquals(true, mermaid.contains("n_A --> n_B"));
+        assertEquals(true, mermaid.contains("n_B[B]"));
+    }
+
+    private static void testMermaidCycle() {
+        PackageIndex index = new PackageIndex(List.of(
+                new PackageIndex.PackageEntry(Map.of("Package", "A", "Depends", "B")),
+                new PackageIndex.PackageEntry(Map.of("Package", "B", "Depends", "A"))
+        ));
+        Map<String, List<String>> graph =
+                GraphBuilder.build(index, "A", Config.DEFAULT_MAX_DEPTH, "");
+        String mermaid = MermaidRenderer.render(graph);
+        assertEquals(true, mermaid.contains("n_A --> n_B"));
+        assertEquals(true, mermaid.contains("n_B --> n_A"));
+    }
+
+    private static void testMermaidEmptyDeps() {
+        PackageIndex index = new PackageIndex(List.of(
+                new PackageIndex.PackageEntry(Map.of("Package", "A"))
+        ));
+        Map<String, List<String>> graph =
+                GraphBuilder.build(index, "A", Config.DEFAULT_MAX_DEPTH, "");
+        String mermaid = MermaidRenderer.render(graph);
+        assertEquals(true, mermaid.contains("n_A[A]"));
+        assertEquals(false, mermaid.contains("-->"));
+    }
+
+    private static void testPngFileCreated() {
+        PackageIndex index = new PackageIndex(List.of(
+                new PackageIndex.PackageEntry(Map.of("Package", "A", "Depends", "B")),
+                new PackageIndex.PackageEntry(Map.of("Package", "B"))
+        ));
+        Map<String, List<String>> graph =
+                GraphBuilder.build(index, "A", Config.DEFAULT_MAX_DEPTH, "");
+        try {
+            Path out = Files.createTempFile("deptool-png-", ".png");
+            out.toFile().deleteOnExit();
+            PngRenderer.render(graph, "A", out.toString());
+            assertEquals(true, Files.size(out) > ZERO);
+        } catch (ConfigException | IOException e) {
+            throw new AssertionError("PNG rendering failed", e);
+        }
     }
 
     @FunctionalInterface

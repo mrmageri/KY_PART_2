@@ -42,9 +42,15 @@ public final class Main {
                         System.out.println("  " + entry.getKey() + " -> " + entry.getValue());
                     }
                 }
-
-                if (config.getOutputFile().endsWith(".dot")) {
-                    GraphPrinter.saveDot(graph, config.getOutputFile());
+                if (config.isMermaidOutput()) {
+                    System.out.println("\nMermaid:");
+                    System.out.println(MermaidRenderer.render(graph));
+                }
+                String outputFile = config.getOutputFile();
+                if (outputFile.endsWith(".png")) {
+                    PngRenderer.render(graph, config.getPackageName(), outputFile);
+                } else if (outputFile.endsWith(".mmd") || outputFile.endsWith(".mermaid")) {
+                    MermaidRenderer.save(graph, outputFile);
                 }
             }
         } catch (ConfigException e) {
@@ -66,18 +72,20 @@ public final class Main {
     private static void printHelp() {
         System.out.println("Usage: deptool [OPTIONS]");
         System.out.println();
-        System.out.println("Dependency graph visualization tool (Stage 3).");
+        System.out.println("Dependency graph visualization tool.");
         System.out.println();
         System.out.println("Options:");
         System.out.println("  --package <name>     Package name (required)");
         System.out.println("  --repo <location>    Repository URL or path (required)");
         System.out.println("  --mode <local|remote> Repo mode (default: local)");
         System.out.println("  --version <value>    Package version (default: latest)");
-        System.out.println("  --output <file>      Image file (default: dependency-graph.png)");
+        System.out.println("  --output <file>      Output file: .png (rendered natively), "
+                + ".mmd or .mermaid (Mermaid text)");
         System.out.println("  --ascii-tree <bool>  ASCII tree mode (default: false)");
         System.out.println("  --max-depth <n>      Analysis depth, 1..100 (default: 5)");
         System.out.println("  --filter <substr>    Package name substring filter");
         System.out.println("  --load-order <bool>  Print dependency load order (default: false)");
         System.out.println("  -h, --help           Show this help");
+        System.out.println("  --mermaid <bool>     Print Mermaid graph (default: false)");
     }
 }
