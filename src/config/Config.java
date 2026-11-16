@@ -12,6 +12,7 @@ public final class Config {
     public static final int MAX_ALLOWED_DEPTH = 100;
 
     public static final int MIN_ALLOWED_DEPTH = 1;
+    public static final boolean DEFAULT_LOAD_ORDER = false;
 
     public static final String DEFAULT_OUTPUT_FILE = "dependency-graph.png";
 
@@ -35,6 +36,7 @@ public final class Config {
     private final boolean asciiTree;
     private final int maxDepth;
     private final String filter;
+    private final boolean loadOrder;
 
     private Config(Builder builder) {
         this.packageName = builder.packageName;
@@ -45,6 +47,7 @@ public final class Config {
         this.asciiTree = builder.asciiTree;
         this.maxDepth = builder.maxDepth;
         this.filter = builder.filter;
+        this.loadOrder = builder.loadOrder;
     }
 
     /**
@@ -55,6 +58,8 @@ public final class Config {
     public String getPackageName() {
         return packageName;
     }
+
+    public boolean isLoadOrder() { return loadOrder; }
 
     /**
      * Returns the repository URL or local file path.
@@ -133,6 +138,7 @@ public final class Config {
                 + "output-file: " + outputFile + nl
                 + "ascii-tree: " + asciiTree + nl
                 + "max-depth: " + maxDepth + nl
+                + "load-order: " + loadOrder + nl
                 + "filter: " + filter;
     }
 
@@ -150,6 +156,7 @@ public final class Config {
         private boolean asciiTree;
         private int maxDepth = DEFAULT_MAX_DEPTH;
         private String filter = "";
+        private boolean loadOrder = DEFAULT_LOAD_ORDER;
 
         /**
          * Sets the analyzed package name.
@@ -168,6 +175,11 @@ public final class Config {
                         + "letters, digits, '.', '_' or '-'");
             }
             this.packageName = value;
+            return this;
+        }
+
+        public Builder loadOrder(boolean value) {
+            this.loadOrder = value;
             return this;
         }
 

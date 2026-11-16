@@ -64,6 +64,9 @@ public final class TestRunner {
         run("graph depth limit",       TestRunner::testGraphDepthLimit);
         run("graph filter",            TestRunner::testGraphFilter);
         run("graph cycle handling",    TestRunner::testGraphCycle);
+        run("load order simple", TestRunner::testLoadOrderSimple);
+        run("load order cycle", TestRunner::testLoadOrderCycle);
+        run("load order filter", TestRunner::testLoadOrderFilter);
     }
 
     private static void testValidFullConfig() {
@@ -295,6 +298,46 @@ public final class TestRunner {
         } catch (Exception e) {
             throw new AssertionError("Cannot create temp file", e);
         }
+    }
+    private static void testLoadOrderSimple() {
+        PackageIndex index = new PackageIndex(List.of(
+                new PackageIndex.PackageEntry(Map.of("Package", "A", "Depends", "B")),
+                new PackageIndex.PackageEntry(Map.of("Package", "B"))
+        ));
+
+        Map<String, List<String>> graph =
+                GraphBuilder.build(index, "A", Config.DEFAULT_MAX_DEPTH, "");
+
+        assertEquals(List.of("B", "A"),
+                DependencyLoadOrder.compute(graph, "A"));
+    }
+
+    private static void testLoadOrderCycle() {
+        PackageIndex index = new PackageIndex(List.of(
+                new PackageIndex.PackageEntry(Map.of("Package", "A", "Depends", "B")),
+                new PackageIndex.PackageEntry(Map.of("Package", "B", "Depends", "A"))
+        ));
+
+        Map<String, List<String>> graph =
+                GraphBuilder.build(index, "A", Config.DEFAULT_MAX_DEPTH, "");
+
+        assertEquals(List.of("B", "A"),
+                DependencyLoadOrder.compute(graph, "A"));
+    }
+
+    private static void testLoadOrderFilter() {
+        PackageIndex index = new PackageIndex(List.of(
+                new PackageIndex.PackageEntry(Map.of("Package", "ROOT", "Depends", "CHILD1, CHILD2")),
+                new PackageIndex.PackageEntry(Map.of("Package", "CHILD1")),
+                new PackageIndex.PackageEntry(Map.of("Package", "CHILD2")),
+                new PackageIndex.PackageEntry(Map.of("Package", "TARGET"))
+        ));
+
+        Map<String, List<String>> graph =
+                GraphBuilder.build(index, "ROOT", Config.DEFAULT_MAX_DEPTH, "TARGET");
+
+        assertEquals(List.of("CHILD1", "CHILD2", "ROOT"),
+                DependencyLoadOrder.compute(graph, "ROOT"));
     }
 
     @FunctionalInterface

@@ -17,10 +17,11 @@ public final class ConfigParser {
     private static final String OPT_ASCII   = "--ascii-tree";
     private static final String OPT_DEPTH   = "--max-depth";
     private static final String OPT_FILTER  = "--filter";
+    private static final String OPT_LOAD_ORDER = "--load-order";
 
     private static final Set<String> KNOWN_OPTIONS = Set.of(
             OPT_PACKAGE, OPT_REPO, OPT_MODE, OPT_VERSION,
-            OPT_OUTPUT, OPT_ASCII, OPT_DEPTH, OPT_FILTER);
+            OPT_OUTPUT, OPT_ASCII, OPT_DEPTH, OPT_FILTER, OPT_LOAD_ORDER);
 
     private static final int NOT_FOUND = -1;
     private static final int KEY_START_INDEX = 0;
@@ -53,6 +54,8 @@ public final class ConfigParser {
         applyIfPresent(opts, OPT_DEPTH,   builder,
                 (b, v) -> b.maxDepth(parseDepth(v)));
         applyIfPresent(opts, OPT_FILTER,  builder, Config.Builder::filter);
+        applyIfPresent(opts, OPT_LOAD_ORDER, builder,
+                (b, v) -> b.loadOrder(parseBoolean(v, OPT_LOAD_ORDER)));
 
         return builder.build();
     }

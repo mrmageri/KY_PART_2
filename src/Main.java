@@ -31,7 +31,11 @@ public final class Main {
             if (graph.isEmpty()) {
                 System.out.println("(no dependencies found or filtered out)");
             } else {
-                if (config.isAsciiTree()) {
+                if (config.isLoadOrder()) {
+                    System.out.println("Load order for " + config.getPackageName() + ":");
+                    DependencyLoadOrder.print(
+                            DependencyLoadOrder.compute(graph, config.getPackageName()));
+                } else if (config.isAsciiTree()) {
                     GraphPrinter.printAsciiTree(graph, config.getPackageName());
                 } else {
                     for (Map.Entry<String, List<String>> entry : graph.entrySet()) {
@@ -73,6 +77,7 @@ public final class Main {
         System.out.println("  --ascii-tree <bool>  ASCII tree mode (default: false)");
         System.out.println("  --max-depth <n>      Analysis depth, 1..100 (default: 5)");
         System.out.println("  --filter <substr>    Package name substring filter");
+        System.out.println("  --load-order <bool>  Print dependency load order (default: false)");
         System.out.println("  -h, --help           Show this help");
     }
 }
