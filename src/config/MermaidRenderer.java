@@ -18,6 +18,16 @@ public final class MermaidRenderer {
     private static final String UNSAFE_PATTERN = "[^A-Za-z0-9_]";
     private static final String SAFE_REPLACEMENT = "_";
 
+    private static final String QUOTE = "\"";
+    private static final String PLAIN_PATTERN = "[A-Za-z0-9_]+";
+
+    private static String label(String name) {
+        if (name.matches(PLAIN_PATTERN)) {
+            return NODE_OPEN + name + NODE_CLOSE;
+        }
+        return NODE_OPEN + QUOTE + name + QUOTE + NODE_CLOSE;
+    }
+
     private MermaidRenderer() {
     }
 
@@ -25,13 +35,11 @@ public final class MermaidRenderer {
         StringBuilder sb = new StringBuilder(HEADER);
         for (Map.Entry<String, List<String>> entry : graph.entrySet()) {
             String from = safeId(entry.getKey());
-            sb.append(INDENT).append(from)
-                    .append(NODE_OPEN).append(entry.getKey()).append(NODE_CLOSE)
+            sb.append(INDENT).append(from).append(label(entry.getKey()))
                     .append(LINE_END);
             for (String dep : entry.getValue()) {
                 sb.append(INDENT).append(from).append(ARROW)
-                        .append(safeId(dep))
-                        .append(NODE_OPEN).append(dep).append(NODE_CLOSE)
+                        .append(safeId(dep)).append(label(dep))
                         .append(LINE_END);
             }
         }

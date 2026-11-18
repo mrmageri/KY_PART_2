@@ -46,7 +46,8 @@ public final class GraphBuilder {
             }
             visited.add(current.name);
 
-            PackageIndex.PackageEntry entry = index.find(current.name, Config.DEFAULT_VERSION);
+            PackageIndex.PackageEntry entry =
+                    index.find(stripVersion(current.name), Config.DEFAULT_VERSION);
             if (entry == null) {
                 graph.put(current.name, new ArrayList<>());
                 continue;
@@ -63,7 +64,13 @@ public final class GraphBuilder {
         }
         return graph;
     }
-
+    private static String stripVersion(String name) {
+        int paren = name.indexOf('(');
+        if (paren < 0) {
+            return name.trim();
+        }
+        return name.substring(0, paren).trim();
+    }
     private static boolean shouldSkip(State current, int maxDepth, String filter, Set<String> visited) {
         if (current.depth > maxDepth) {
             return true;
@@ -74,7 +81,8 @@ public final class GraphBuilder {
         return visited.contains(current.name);
     }
 
-    private static List<String> extractDependencies(PackageIndex.PackageEntry entry, String filter) {
+    private static List<String> extractDependencies(
+            PackageIndex.PackageEntry entry, String filter) {
         List<String> directDeps = new ArrayList<>();
         List<List<DependencyParser.Dependency>> parsedDeps =
                 new ArrayList<>(DependencyParser.parse(entry.get("Depends")));
@@ -82,10 +90,11 @@ public final class GraphBuilder {
 
         for (List<DependencyParser.Dependency> group : parsedDeps) {
             for (DependencyParser.Dependency dep : group) {
-                if (filter != null && !filter.isEmpty() && dep.packageName().contains(filter)) {
+                if (filter != null && !filter.isEmpty()
+                        && dep.packageName().contains(filter)) {
                     continue;
                 }
-                directDeps.add(dep.packageName());
+                directDeps.add(dep.display());
             }
         }
         return directDeps;

@@ -26,7 +26,6 @@ public final class PngRenderer {
     private static final String FONT_NAME = Font.SANS_SERIF;
     private static final String ELLIPSIS = "...";
     private static final int ELLIPSIS_LENGTH = 3;
-    private static final int NODE_WIDTH = 160;
     private static final int NODE_HEIGHT = 40;
     private static final int H_GAP = 30;
     private static final int V_GAP = 60;
@@ -35,7 +34,8 @@ public final class PngRenderer {
     private static final int ARC = 12;
     private static final int LINE_THICKNESS = 2;
     private static final int BORDER_THICKNESS = 2;
-    private static final int MAX_LABEL = 22;
+    private static final int MAX_LABEL = 30;
+    private static final int NODE_WIDTH = 220;
     private static final int RGB_BG = 0xFFFFFF;
     private static final int RGB_EDGE = 0x555555;
     private static final int RGB_NODE_FILL = 0xE8F0FE;
